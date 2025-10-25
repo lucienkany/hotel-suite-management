@@ -1,0 +1,1533 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id             Int       @id @default(autoincrement())
+  name           String    @db.NVarChar(100)
+  companyAddress String?   @map("company_address") @db.NVarChar(255)
+  phone          String?   @db.NVarChar(20)
+  email          String?   @db.NVarChar(255)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  users               User[]
+  invitations         Invitation[]
+  roomTypes           RoomType[]
+  rooms               Room[]
+  clients             Client[]
+  sponsorClients      Client[]             @relation("SponsoredClients")
+  stays               Stay[]
+  categories          Category[]
+  products            Product[]
+  consumptions        Consumption[]
+  restaurantOrders    RestaurantOrder[]
+  restaurantTables    RestaurantTable[]    
+  supermarketOrders   SupermarketOrder[]
+  laundryOrders       LaundryOrder[]
+  sportReservations   SportReservation[]
+  barberAppointments  BarberAppointment[]
+  invoices            Invoice[]
+  payments            Payment[]
+  accountTransactions AccountTransaction[]
+  sponsorAccounts     SponsorAccount[]
+  licenses            License[]
+  auditLogs           AuditLog[]
+
+  @@map("companies")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique @db.NVarChar(255)
+  password  String    @db.NVarChar(255)
+  firstName String    @map("first_name") @db.NVarChar(100)
+  lastName  String    @map("last_name") @db.NVarChar(100)
+  role      String    @default("STAFF") @db.NVarChar(50)
+  status    String    @default("active") @db.NVarChar(50)
+  companyId Int       @map("company_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy Int?      @map("created_by")
+  updatedBy Int?      @map("updated_by")
+  deletedBy Int?      @map("deleted_by")
+
+  company                    Company              @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  sentInvitations            Invitation[]         @relation("InvitedBy")
+  acceptedInvitation         Invitation[]         @relation("AcceptedBy")
+  createdRoomTypes           RoomType[]           @relation("CreatedBy")
+  updatedRoomTypes           RoomType[]           @relation("UpdatedBy")
+  deletedRoomTypes           RoomType[]           @relation("DeletedBy")
+  createdRooms               Room[]               @relation("CreatedBy")
+  updatedRooms               Room[]               @relation("UpdatedBy")
+  deletedRooms               Room[]               @relation("DeletedBy")
+  createdClients             Client[]             @relation("CreatedBy")
+  updatedClients             Client[]             @relation("UpdatedBy")
+  deletedClients             Client[]             @relation("DeletedBy")
+  createdStays               Stay[]               @relation("CreatedBy")
+  updatedStays               Stay[]               @relation("UpdatedBy")
+  deletedStays               Stay[]               @relation("DeletedBy")
+  createdCategories          Category[]           @relation("CreatedBy")
+  updatedCategories          Category[]           @relation("UpdatedBy")
+  deletedCategories          Category[]           @relation("DeletedBy")
+  createdProducts            Product[]            @relation("CreatedBy")
+  updatedProducts            Product[]            @relation("UpdatedBy")
+  deletedProducts            Product[]            @relation("DeletedBy")
+  createdConsumptions        Consumption[]        @relation("CreatedBy")
+  updatedConsumptions        Consumption[]        @relation("UpdatedBy")
+  deletedConsumptions        Consumption[]        @relation("DeletedBy")
+  createdRestaurantOrders    RestaurantOrder[]    @relation("CreatedBy")
+  updatedRestaurantOrders    RestaurantOrder[]    @relation("UpdatedBy")
+  deletedRestaurantOrders    RestaurantOrder[]    @relation("DeletedBy")
+  createdRestaurantTables    RestaurantTable[]    @relation("CreatedBy")    
+  updatedRestaurantTables    RestaurantTable[]    @relation("UpdatedBy")    
+  deletedRestaurantTables    RestaurantTable[]    @relation("DeletedBy")    
+  createdSupermarketOrders   SupermarketOrder[]   @relation("CreatedBy")
+  updatedSupermarketOrders   SupermarketOrder[]   @relation("UpdatedBy")
+  deletedSupermarketOrders   SupermarketOrder[]   @relation("DeletedBy")
+  createdLaundryOrders       LaundryOrder[]       @relation("CreatedBy")
+  updatedLaundryOrders       LaundryOrder[]       @relation("UpdatedBy")
+  deletedLaundryOrders       LaundryOrder[]       @relation("DeletedBy")
+  createdSportReservations   SportReservation[]   @relation("CreatedBy")
+  updatedSportReservations   SportReservation[]   @relation("UpdatedBy")
+  deletedSportReservations   SportReservation[]   @relation("DeletedBy")
+  createdBarberAppointments  BarberAppointment[]  @relation("CreatedBy")
+  updatedBarberAppointments  BarberAppointment[]  @relation("UpdatedBy")
+  deletedBarberAppointments  BarberAppointment[]  @relation("DeletedBy")
+  createdInvoices            Invoice[]            @relation("CreatedBy")
+  updatedInvoices            Invoice[]            @relation("UpdatedBy")
+  deletedInvoices            Invoice[]            @relation("DeletedBy")
+  createdPayments            Payment[]            @relation("CreatedBy")
+  updatedPayments            Payment[]            @relation("UpdatedBy")
+  deletedPayments            Payment[]            @relation("DeletedBy")
+  createdAccountTransactions AccountTransaction[] @relation("CreatedBy")
+  updatedAccountTransactions AccountTransaction[] @relation("UpdatedBy")
+  deletedAccountTransactions AccountTransaction[] @relation("DeletedBy")
+  createdSponsorAccounts     SponsorAccount[]     @relation("CreatedBy")
+  updatedSponsorAccounts     SponsorAccount[]     @relation("UpdatedBy")
+  deletedSponsorAccounts     SponsorAccount[]     @relation("DeletedBy")
+  auditLogs                  AuditLog[]
+
+  @@map("users")
+}
+
+model Invitation {
+  id         Int       @id @default(autoincrement())
+  email      String    @db.NVarChar(255)
+  role       String    @db.NVarChar(50)
+  token      String    @unique @db.NVarChar(255)
+  expiresAt  DateTime  @map("expires_at")
+  acceptedAt DateTime? @map("accepted_at")
+  companyId  Int       @map("company_id")
+  invitedBy  Int       @map("invited_by")
+  acceptedBy Int?      @map("accepted_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  company        Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  inviter        User    @relation("InvitedBy", fields: [invitedBy], references: [id], onUpdate: NoAction)
+  acceptedByUser User?   @relation("AcceptedBy", fields: [acceptedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@map("invitations")
+}
+
+model RoomType {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.NVarChar(100)
+  description  String?   @db.NVarChar(500)
+  basePrice    Decimal   @map("base_price") @db.Decimal(10, 2)
+  maxOccupancy Int       @map("max_occupancy")
+  bedType      String?   @map("bed_type") @db.NVarChar(50)
+  size         Decimal?  @db.Decimal(10, 2)
+  amenities    String?   @db.NVarChar(Max)
+  images       String?   @db.NVarChar(Max)
+  companyId    Int       @map("company_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  createdBy    Int       @map("created_by")
+  updatedBy    Int       @map("updated_by")
+  deletedBy    Int?      @map("deleted_by")
+
+  company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator User    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater User    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter User?   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  rooms   Room[]
+
+  @@unique([companyId, name])
+  @@map("room_types")
+}
+
+model Room {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.NVarChar(100)
+  roomNumber  String    @map("room_number") @db.NVarChar(50)
+  floor       Int
+  roomTypeId  Int       @map("room_type_id")
+  status      String    @default("AVAILABLE") @db.NVarChar(50)
+  description String?   @db.NVarChar(500)
+  companyId   Int       @map("company_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   Int       @map("created_by")
+  updatedBy   Int       @map("updated_by")
+  deletedBy   Int?      @map("deleted_by")
+
+  company  Company  @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onUpdate: NoAction)
+  creator  User     @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater  User     @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter  User?    @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  stays    Stay[]
+
+  @@unique([companyId, roomNumber])
+  @@map("rooms")
+}
+
+model Client {
+  id               Int       @id @default(autoincrement())
+  firstName        String    @map("first_name") @db.NVarChar(100)
+  lastName         String    @map("last_name") @db.NVarChar(100)
+  email            String?   @db.NVarChar(255)
+  phone            String?   @db.NVarChar(20)
+  address          String?   @db.NVarChar(255)
+  idNumber         String?   @map("id_number") @db.NVarChar(50)
+  customerType     String    @default("WALK_IN") @map("customer_type") @db.NVarChar(50)
+  hasAccount       Boolean   @default(false) @map("has_account")
+  creditLimit      Decimal?  @map("credit_limit") @db.Decimal(10, 2)
+  currentBalance   Decimal   @default(0) @map("current_balance") @db.Decimal(10, 2)
+  sponsorCompanyId Int?      @map("sponsor_company_id")
+  employeeId       String?   @map("employee_id") @db.NVarChar(50)
+  department       String?   @db.NVarChar(100)
+  companyId        Int       @map("company_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+  createdBy        Int       @map("created_by")
+  updatedBy        Int       @map("updated_by")
+  deletedBy        Int?      @map("deleted_by")
+
+  company             Company              @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  sponsorCompany      Company?             @relation("SponsoredClients", fields: [sponsorCompanyId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator             User                 @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater             User                 @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter             User?                @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  stays               Stay[]
+  invoices            Invoice[]
+  accountTransactions AccountTransaction[]
+  restaurantOrders    RestaurantOrder[]
+  supermarketOrders   SupermarketOrder[]
+  laundryOrders       LaundryOrder[]
+  sportReservations   SportReservation[]
+  barberAppointments  BarberAppointment[]
+
+  @@map("clients")
+}
+
+model Stay {
+  id             Int       @id @default(autoincrement())
+  roomId         Int       @map("room_id")
+  clientId       Int       @map("client_id")
+  checkInDate    DateTime  @map("check_in_date")
+  checkOutDate   DateTime  @map("check_out_date")
+  actualCheckIn  DateTime? @map("actual_check_in")
+  actualCheckOut DateTime? @map("actual_check_out")
+  status         String    @default("confirmed") @db.NVarChar(50)
+  adults         Int       @default(1)
+  children       Int       @default(0)
+  totalAmount    Decimal   @map("total_amount") @db.Decimal(10, 2)
+  paidAmount     Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  notes          String?   @db.NVarChar(500)
+  companyId      Int       @map("company_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  createdBy      Int       @map("created_by")
+  updatedBy      Int       @map("updated_by")
+  deletedBy      Int?      @map("deleted_by")
+
+  company            Company             @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  room               Room                @relation(fields: [roomId], references: [id], onUpdate: NoAction)
+  client             Client              @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+  creator            User                @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater            User                @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter            User?               @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  consumptions       Consumption[]
+  restaurantOrders   RestaurantOrder[]
+  supermarketOrders  SupermarketOrder[]
+  laundryOrders      LaundryOrder[]
+  sportReservations  SportReservation[]
+  barberAppointments BarberAppointment[]
+
+  @@map("stays")
+}
+
+model Category {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.NVarChar(100)
+  categoryType String    @map("category_type") @db.NVarChar(50)
+  type         String    @db.NVarChar(50)
+  description  String?   @db.NVarChar(500)
+  companyId    Int       @map("company_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  createdBy    Int       @map("created_by")
+  updatedBy    Int       @map("updated_by")
+  deletedBy    Int?      @map("deleted_by")
+
+  company  Company   @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator  User      @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater  User      @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter  User?     @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.NVarChar(200)
+  categoryId  Int       @map("category_id")
+  price       Decimal   @db.Decimal(10, 2)
+  unit        String    @db.NVarChar(50)
+  description String?   @db.NVarChar(500)
+  barcode     String?   @db.NVarChar(50)
+  stock       Int       @default(0)
+  companyId   Int       @map("company_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   Int       @map("created_by")
+  updatedBy   Int       @map("updated_by")
+  deletedBy   Int?      @map("deleted_by")
+
+  category               Category                @relation(fields: [categoryId], references: [id], onUpdate: NoAction)
+  company                Company                 @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator                User                    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater                User                    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter                User?                   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  consumptions           Consumption[]
+  restaurantOrderItems   RestaurantOrderItem[]
+  supermarketOrderItems  SupermarketOrderItem[]
+  laundryOrderItems      LaundryOrderItem[]
+  sportReservationItems  SportReservationItem[]
+  barberAppointmentItems BarberAppointmentItem[]
+
+  @@map("products")
+}
+
+model Consumption {
+  id        Int       @id @default(autoincrement())
+  stayId    Int       @map("stay_id")
+  productId Int       @map("product_id")
+  quantity  Decimal   @db.Decimal(10, 2)
+  unitPrice Decimal   @map("unit_price") @db.Decimal(10, 2)
+  total     Decimal   @db.Decimal(10, 2)
+  date      DateTime
+  companyId Int       @map("company_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy Int       @map("created_by")
+  updatedBy Int       @map("updated_by")
+  deletedBy Int?      @map("deleted_by")
+
+  stay    Stay    @relation(fields: [stayId], references: [id], onUpdate: NoAction)
+  product Product @relation(fields: [productId], references: [id], onUpdate: NoAction)
+  company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator User    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater User    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter User?   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@map("consumptions")
+}
+
+model RestaurantOrder {
+  id            Int       @id @default(autoincrement())
+  stayId        Int?      @map("stay_id")
+  clientId      Int       @map("client_id")
+  orderDate     DateTime  @map("order_date")
+  total         Decimal   @db.Decimal(10, 2)
+  status        String    @db.NVarChar(50)
+  serviceMode   String    @default("WALK_IN") @map("service_mode") @db.NVarChar(50)
+  tableNumber   String?   @map("table_number") @db.NVarChar(20)
+  paymentStatus String    @default("PENDING") @map("payment_status") @db.NVarChar(50)
+  paidAmount    Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  companyId     Int       @map("company_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+  createdBy     Int       @map("created_by")
+  updatedBy     Int       @map("updated_by")
+  deletedBy     Int?      @map("deleted_by")
+
+  stay     Stay?                 @relation(fields: [stayId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  client   Client                @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+  company  Company               @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator  User                  @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater  User                  @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter  User?                 @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  items    RestaurantOrderItem[]
+  payments Payment[]
+  table    RestaurantTable?      @relation("CurrentTableOrder")  
+
+  @@map("restaurant_orders")
+}
+
+model RestaurantOrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int     @map("order_id")
+  productId Int     @map("product_id")
+  quantity  Decimal @db.Decimal(10, 2)
+  unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+  total     Decimal @db.Decimal(10, 2)
+
+  order   RestaurantOrder @relation(fields: [orderId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+  product Product         @relation(fields: [productId], references: [id], onUpdate: NoAction)
+
+  @@map("restaurant_order_items")
+}
+
+model SupermarketOrder {
+  id            Int       @id @default(autoincrement())
+  stayId        Int?      @map("stay_id")
+  clientId      Int       @map("client_id")
+  orderDate     DateTime  @map("order_date")
+  total         Decimal   @db.Decimal(10, 2)
+  status        String    @db.NVarChar(50)
+  serviceMode   String    @default("WALK_IN") @map("service_mode") @db.NVarChar(50)
+  paymentStatus String    @default("PENDING") @map("payment_status") @db.NVarChar(50)
+  paidAmount    Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  companyId     Int       @map("company_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+  createdBy     Int       @map("created_by")
+  updatedBy     Int       @map("updated_by")
+  deletedBy     Int?      @map("deleted_by")
+
+  stay     Stay?                  @relation(fields: [stayId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  client   Client                 @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+  company  Company                @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator  User                   @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater  User                   @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter  User?                  @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  items    SupermarketOrderItem[]
+  payments Payment[]
+
+  @@map("supermarket_orders")
+}
+
+model SupermarketOrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int     @map("order_id")
+  productId Int     @map("product_id")
+  quantity  Decimal @db.Decimal(10, 2)
+  unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+  total     Decimal @db.Decimal(10, 2)
+
+  order   SupermarketOrder @relation(fields: [orderId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+  product Product          @relation(fields: [productId], references: [id], onUpdate: NoAction)
+
+  @@map("supermarket_order_items")
+}
+
+model LaundryOrder {
+  id            Int       @id @default(autoincrement())
+  stayId        Int?      @map("stay_id")
+  clientId      Int       @map("client_id")
+  orderDate     DateTime  @map("order_date")
+  total         Decimal   @db.Decimal(10, 2)
+  status        String    @db.NVarChar(50)
+  serviceMode   String    @default("WALK_IN") @map("service_mode") @db.NVarChar(50)
+  pickupDate    DateTime? @map("pickup_date")
+  deliveryDate  DateTime? @map("delivery_date")
+  paymentStatus String    @default("PENDING") @map("payment_status") @db.NVarChar(50)
+  paidAmount    Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  companyId     Int       @map("company_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+  createdBy     Int       @map("created_by")
+  updatedBy     Int       @map("updated_by")
+  deletedBy     Int?      @map("deleted_by")
+
+  stay     Stay?              @relation(fields: [stayId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  client   Client             @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+  company  Company            @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator  User               @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater  User               @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter  User?              @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  items    LaundryOrderItem[]
+  payments Payment[]
+
+  @@map("laundry_orders")
+}
+
+model LaundryOrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int     @map("order_id")
+  productId Int     @map("product_id")
+  quantity  Decimal @db.Decimal(10, 2)
+  unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+  total     Decimal @db.Decimal(10, 2)
+
+  order   LaundryOrder @relation(fields: [orderId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+  product Product      @relation(fields: [productId], references: [id], onUpdate: NoAction)
+
+  @@map("laundry_order_items")
+}
+
+model SportReservation {
+  id              Int       @id @default(autoincrement())
+  stayId          Int?      @map("stay_id")
+  clientId        Int       @map("client_id")
+  reservationDate DateTime  @map("reservation_date")
+  startTime       DateTime  @map("start_time")
+  endTime         DateTime  @map("end_time")
+  total           Decimal   @db.Decimal(10, 2)
+  status          String    @db.NVarChar(50)
+  serviceMode     String    @default("WALK_IN") @map("service_mode") @db.NVarChar(50)
+  facilityType    String?   @map("facility_type") @db.NVarChar(100)
+  paymentStatus   String    @default("PENDING") @map("payment_status") @db.NVarChar(50)
+  paidAmount      Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  companyId       Int       @map("company_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  createdBy       Int       @map("created_by")
+  updatedBy       Int       @map("updated_by")
+  deletedBy       Int?      @map("deleted_by")
+
+  stay     Stay?                  @relation(fields: [stayId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  client   Client                 @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+  company  Company                @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator  User                   @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater  User                   @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter  User?                  @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  items    SportReservationItem[]
+  payments Payment[]
+
+  @@map("sport_reservations")
+}
+
+model SportReservationItem {
+  id            Int     @id @default(autoincrement())
+  reservationId Int     @map("reservation_id")
+  productId     Int     @map("product_id")
+  quantity      Decimal @db.Decimal(10, 2)
+  unitPrice     Decimal @map("unit_price") @db.Decimal(10, 2)
+  total         Decimal @db.Decimal(10, 2)
+
+  reservation SportReservation @relation(fields: [reservationId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+  product     Product          @relation(fields: [productId], references: [id], onUpdate: NoAction)
+
+  @@map("sport_reservation_items")
+}
+
+model BarberAppointment {
+  id              Int       @id @default(autoincrement())
+  stayId          Int?      @map("stay_id")
+  clientId        Int       @map("client_id")
+  appointmentDate DateTime  @map("appointment_date")
+  startTime       DateTime  @map("start_time")
+  endTime         DateTime? @map("end_time")
+  total           Decimal   @db.Decimal(10, 2)
+  status          String    @db.NVarChar(50)
+  serviceMode     String    @default("WALK_IN") @map("service_mode") @db.NVarChar(50)
+  barberName      String?   @map("barber_name") @db.NVarChar(100)
+  paymentStatus   String    @default("PENDING") @map("payment_status") @db.NVarChar(50)
+  paidAmount      Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  companyId       Int       @map("company_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  createdBy       Int       @map("created_by")
+  updatedBy       Int       @map("updated_by")
+  deletedBy       Int?      @map("deleted_by")
+
+  stay     Stay?                   @relation(fields: [stayId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  client   Client                  @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+  company  Company                 @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator  User                    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater  User                    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter  User?                   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  items    BarberAppointmentItem[]
+  payments Payment[]
+
+  @@map("barber_appointments")
+}
+
+model BarberAppointmentItem {
+  id            Int     @id @default(autoincrement())
+  appointmentId Int     @map("appointment_id")
+  productId     Int     @map("product_id")
+  quantity      Decimal @db.Decimal(10, 2)
+  unitPrice     Decimal @map("unit_price") @db.Decimal(10, 2)
+  total         Decimal @db.Decimal(10, 2)
+
+  appointment BarberAppointment @relation(fields: [appointmentId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+  product     Product           @relation(fields: [productId], references: [id], onUpdate: NoAction)
+
+  @@map("barber_appointment_items")
+}
+
+model Payment {
+  id                  Int       @id @default(autoincrement())
+  amount              Decimal   @db.Decimal(10, 2)
+  paymentMethod       String    @map("payment_method") @db.NVarChar(50)
+  paymentDate         DateTime  @default(now()) @map("payment_date")
+  status              String    @default("COMPLETED") @db.NVarChar(50)
+  reference           String?   @db.NVarChar(100)
+  notes               String?   @db.NVarChar(500)
+  restaurantOrderId   Int?      @map("restaurant_order_id")
+  supermarketOrderId  Int?      @map("supermarket_order_id")
+  laundryOrderId      Int?      @map("laundry_order_id")
+  sportReservationId  Int?      @map("sport_reservation_id")
+  barberAppointmentId Int?      @map("barber_appointment_id")
+  companyId           Int       @map("company_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  deletedAt           DateTime? @map("deleted_at")
+  createdBy           Int       @map("created_by")
+  updatedBy           Int       @map("updated_by")
+  deletedBy           Int?      @map("deleted_by")
+
+  restaurantOrder   RestaurantOrder?   @relation(fields: [restaurantOrderId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  supermarketOrder  SupermarketOrder?  @relation(fields: [supermarketOrderId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  laundryOrder      LaundryOrder?      @relation(fields: [laundryOrderId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  sportReservation  SportReservation?  @relation(fields: [sportReservationId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  barberAppointment BarberAppointment? @relation(fields: [barberAppointmentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  company           Company            @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator           User               @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater           User               @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter           User?              @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@map("payments")
+}
+
+model AccountTransaction {
+  id              Int       @id @default(autoincrement())
+  clientId        Int       @map("client_id")
+  transactionType String    @map("transaction_type") @db.NVarChar(50)
+  amount          Decimal   @db.Decimal(10, 2)
+  balance         Decimal   @db.Decimal(10, 2)
+  description     String    @db.NVarChar(500)
+  referenceType   String?   @map("reference_type") @db.NVarChar(100)
+  referenceId     Int?      @map("reference_id")
+  transactionDate DateTime  @default(now()) @map("transaction_date")
+  companyId       Int       @map("company_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  createdBy       Int       @map("created_by")
+  updatedBy       Int       @map("updated_by")
+  deletedBy       Int?      @map("deleted_by")
+
+  client  Client  @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+  company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator User    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater User    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter User?   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@index([clientId, transactionDate])
+  @@map("account_transactions")
+}
+
+model SponsorAccount {
+  id               Int       @id @default(autoincrement())
+  sponsorCompanyId Int       @map("sponsor_company_id")
+  serviceCompanyId Int       @map("service_company_id")
+  accountName      String    @map("account_name") @db.NVarChar(200)
+  accountNumber    String?   @unique @map("account_number") @db.NVarChar(50)
+  contactPerson    String?   @map("contact_person") @db.NVarChar(100)
+  contactEmail     String?   @map("contact_email") @db.NVarChar(255)
+  contactPhone     String?   @map("contact_phone") @db.NVarChar(20)
+  creditLimit      Decimal?  @map("credit_limit") @db.Decimal(10, 2)
+  currentBalance   Decimal   @default(0) @map("current_balance") @db.Decimal(10, 2)
+  paymentTerms     String?   @map("payment_terms") @db.NVarChar(100)
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+  createdBy        Int       @map("created_by")
+  updatedBy        Int       @map("updated_by")
+  deletedBy        Int?      @map("deleted_by")
+
+  serviceCompany Company @relation(fields: [serviceCompanyId], references: [id], onUpdate: NoAction)
+  creator        User    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater        User    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter        User?   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@unique([sponsorCompanyId, serviceCompanyId])
+  @@map("sponsor_accounts")
+}
+
+model Invoice {
+  id            Int       @id @default(autoincrement())
+  invoiceNumber String    @unique @map("invoice_number") @db.NVarChar(50)
+  clientId      Int       @map("client_id")
+  issueDate     DateTime  @map("issue_date")
+  dueDate       DateTime? @map("due_date")
+  subtotal      Decimal   @db.Decimal(10, 2)
+  tax           Decimal   @db.Decimal(10, 2)
+  total         Decimal   @db.Decimal(10, 2)
+  status        String    @db.NVarChar(50)
+  paymentMethod String?   @map("payment_method") @db.NVarChar(50)
+  notes         String?   @db.NVarChar(500)
+  companyId     Int       @map("company_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+  createdBy     Int       @map("created_by")
+  updatedBy     Int       @map("updated_by")
+  deletedBy     Int?      @map("deleted_by")
+
+  client  Client  @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+  company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator User    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater User    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter User?   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@map("invoices")
+}
+
+model License {
+  id         Int      @id @default(autoincrement())
+  companyId  Int      @unique @map("company_id")
+  plan       String   @default("TRIAL") @db.NVarChar(50)
+  status     String   @default("ACTIVE") @db.NVarChar(50)
+  startDate  DateTime @map("start_date")
+  endDate    DateTime @map("end_date")
+  maxUsers   Int      @map("max_users")
+  maxClients Int      @map("max_clients")
+  maxRooms   Int      @map("max_rooms")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+
+  @@map("licenses")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  companyId Int      @map("company_id")
+  action    String   @db.NVarChar(50)
+  entity    String   @db.NVarChar(100)
+  entityId  Int      @map("entity_id")
+  changes   String?  @db.NVarChar(Max)
+  ipAddress String?  @map("ip_address") @db.NVarChar(50)
+  userAgent String?  @map("user_agent") @db.NVarChar(500)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onUpdate: NoAction)
+  company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+
+  @@map("audit_logs")
+}
+
+model RestaurantTable {
+  id              Int       @id @default(autoincrement())
+  tableNumber     String    @map("table_number") @db.NVarChar(50)
+  capacity        Int
+  location        String?   @db.NVarChar(100)
+  description     String?   @db.NVarChar(500)
+  status          String    @default("AVAILABLE") @db.NVarChar(50)
+  currentOrderId  Int?      @unique @map("current_order_id")
+  companyId       Int       @map("company_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  createdBy       Int       @map("created_by")
+  updatedBy       Int       @map("updated_by")
+  deletedBy       Int?      @map("deleted_by")
+
+  company      Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  currentOrder RestaurantOrder? @relation("CurrentTableOrder", fields: [currentOrderId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator      User             @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+  updater      User             @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+  deleter      User?            @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@unique([companyId, tableNumber])
+  @@map("restaurant_tables")
+}
+
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "sqlserver"
+//   url      = env("DATABASE_URL")
+// }
+
+// model Company {
+//   id             Int       @id @default(autoincrement())
+//   name           String    @db.NVarChar(100)
+//   companyAddress String?   @map("company_address") @db.NVarChar(255)
+//   phone          String?   @db.NVarChar(20)
+//   email          String?   @db.NVarChar(255)
+//   createdAt      DateTime  @default(now()) @map("created_at")
+//   updatedAt      DateTime  @updatedAt @map("updated_at")
+//   deletedAt      DateTime? @map("deleted_at")
+
+//   users               User[]
+//   invitations         Invitation[]
+//   roomTypes           RoomType[]
+//   rooms               Room[]
+//   clients             Client[]
+//   sponsorClients      Client[]             @relation("SponsoredClients")
+//   stays               Stay[]
+//   categories          Category[]
+//   products            Product[]
+//   consumptions        Consumption[]
+//   restaurantOrders    RestaurantOrder[]
+//   restaurantTables    RestaurantTable[]    
+//   supermarketOrders   SupermarketOrder[]
+//   laundryOrders       LaundryOrder[]
+//   sportReservations   SportReservation[]
+//   barberAppointments  BarberAppointment[]
+//   invoices            Invoice[]
+//   payments            Payment[]
+//   accountTransactions AccountTransaction[]
+//   sponsorAccounts     SponsorAccount[]
+//   licenses            License[]
+//   auditLogs           AuditLog[]
+
+//   @@map("companies")
+// }
+
+// model User {
+//   id        Int       @id @default(autoincrement())
+//   email     String    @unique @db.NVarChar(255)
+//   password  String    @db.NVarChar(255)
+//   firstName String    @map("first_name") @db.NVarChar(100)
+//   lastName  String    @map("last_name") @db.NVarChar(100)
+//   role      String    @default("STAFF") @db.NVarChar(50)
+//   status    String    @default("active") @db.NVarChar(50)
+//   companyId Int       @map("company_id")
+//   createdAt DateTime  @default(now()) @map("created_at")
+//   updatedAt DateTime  @updatedAt @map("updated_at")
+//   deletedAt DateTime? @map("deleted_at")
+//   createdBy Int?      @map("created_by")
+//   updatedBy Int?      @map("updated_by")
+//   deletedBy Int?      @map("deleted_by")
+
+//   company                    Company              @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   sentInvitations            Invitation[]         @relation("InvitedBy")
+//   acceptedInvitation         Invitation[]         @relation("AcceptedBy")
+//   createdRoomTypes           RoomType[]           @relation("CreatedBy")
+//   updatedRoomTypes           RoomType[]           @relation("UpdatedBy")
+//   deletedRoomTypes           RoomType[]           @relation("DeletedBy")
+//   createdRooms               Room[]               @relation("CreatedBy")
+//   updatedRooms               Room[]               @relation("UpdatedBy")
+//   deletedRooms               Room[]               @relation("DeletedBy")
+//   createdClients             Client[]             @relation("CreatedBy")
+//   updatedClients             Client[]             @relation("UpdatedBy")
+//   deletedClients             Client[]             @relation("DeletedBy")
+//   createdStays               Stay[]               @relation("CreatedBy")
+//   updatedStays               Stay[]               @relation("UpdatedBy")
+//   deletedStays               Stay[]               @relation("DeletedBy")
+//   createdCategories          Category[]           @relation("CreatedBy")
+//   updatedCategories          Category[]           @relation("UpdatedBy")
+//   deletedCategories          Category[]           @relation("DeletedBy")
+//   createdProducts            Product[]            @relation("CreatedBy")
+//   updatedProducts            Product[]            @relation("UpdatedBy")
+//   deletedProducts            Product[]            @relation("DeletedBy")
+//   createdConsumptions        Consumption[]        @relation("CreatedBy")
+//   updatedConsumptions        Consumption[]        @relation("UpdatedBy")
+//   deletedConsumptions        Consumption[]        @relation("DeletedBy")
+//   createdRestaurantOrders    RestaurantOrder[]    @relation("CreatedBy")
+//   updatedRestaurantOrders    RestaurantOrder[]    @relation("UpdatedBy")
+//   deletedRestaurantOrders    RestaurantOrder[]    @relation("DeletedBy")
+//   createdRestaurantTables    RestaurantTable[]    @relation("CreatedBy")    
+//   updatedRestaurantTables    RestaurantTable[]    @relation("UpdatedBy")    
+//   deletedRestaurantTables    RestaurantTable[]    @relation("DeletedBy")    
+//   createdSupermarketOrders   SupermarketOrder[]   @relation("CreatedBy")
+//   updatedSupermarketOrders   SupermarketOrder[]   @relation("UpdatedBy")
+//   deletedSupermarketOrders   SupermarketOrder[]   @relation("DeletedBy")
+//   createdLaundryOrders       LaundryOrder[]       @relation("CreatedBy")
+//   updatedLaundryOrders       LaundryOrder[]       @relation("UpdatedBy")
+//   deletedLaundryOrders       LaundryOrder[]       @relation("DeletedBy")
+//   createdSportReservations   SportReservation[]   @relation("CreatedBy")
+//   updatedSportReservations   SportReservation[]   @relation("UpdatedBy")
+//   deletedSportReservations   SportReservation[]   @relation("DeletedBy")
+//   createdBarberAppointments  BarberAppointment[]  @relation("CreatedBy")
+//   updatedBarberAppointments  BarberAppointment[]  @relation("UpdatedBy")
+//   deletedBarberAppointments  BarberAppointment[]  @relation("DeletedBy")
+//   createdInvoices            Invoice[]            @relation("CreatedBy")
+//   updatedInvoices            Invoice[]            @relation("UpdatedBy")
+//   deletedInvoices            Invoice[]            @relation("DeletedBy")
+//   createdPayments            Payment[]            @relation("CreatedBy")
+//   updatedPayments            Payment[]            @relation("UpdatedBy")
+//   deletedPayments            Payment[]            @relation("DeletedBy")
+//   createdAccountTransactions AccountTransaction[] @relation("CreatedBy")
+//   updatedAccountTransactions AccountTransaction[] @relation("UpdatedBy")
+//   deletedAccountTransactions AccountTransaction[] @relation("DeletedBy")
+//   createdSponsorAccounts     SponsorAccount[]     @relation("CreatedBy")
+//   updatedSponsorAccounts     SponsorAccount[]     @relation("UpdatedBy")
+//   deletedSponsorAccounts     SponsorAccount[]     @relation("DeletedBy")
+//   auditLogs                  AuditLog[]
+
+//   @@map("users")
+// }
+
+// model Invitation {
+//   id         Int       @id @default(autoincrement())
+//   email      String    @db.NVarChar(255)
+//   role       String    @db.NVarChar(50)
+//   token      String    @unique @db.NVarChar(255)
+//   expiresAt  DateTime  @map("expires_at")
+//   acceptedAt DateTime? @map("accepted_at")
+//   companyId  Int       @map("company_id")
+//   invitedBy  Int       @map("invited_by")
+//   acceptedBy Int?      @map("accepted_by")
+//   createdAt  DateTime  @default(now()) @map("created_at")
+//   updatedAt  DateTime  @updatedAt @map("updated_at")
+
+//   company        Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   inviter        User    @relation("InvitedBy", fields: [invitedBy], references: [id], onUpdate: NoAction)
+//   acceptedByUser User?   @relation("AcceptedBy", fields: [acceptedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+//   @@map("invitations")
+// }
+
+// model RoomType {
+//   id           Int       @id @default(autoincrement())
+//   name         String    @db.NVarChar(100)
+//   description  String?   @db.NVarChar(500)
+//   basePrice    Decimal   @map("base_price") @db.Decimal(10, 2)
+//   maxOccupancy Int       @map("max_occupancy")
+//   bedType      String?   @map("bed_type") @db.NVarChar(50)
+//   size         Decimal?  @db.Decimal(10, 2)
+//   amenities    String?   @db.NVarChar(Max)
+//   images       String?   @db.NVarChar(Max)
+//   companyId    Int       @map("company_id")
+//   createdAt    DateTime  @default(now()) @map("created_at")
+//   updatedAt    DateTime  @updatedAt @map("updated_at")
+//   deletedAt    DateTime? @map("deleted_at")
+//   createdBy    Int       @map("created_by")
+//   updatedBy    Int       @map("updated_by")
+//   deletedBy    Int?      @map("deleted_by")
+
+//   company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator User    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater User    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter User?   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   rooms   Room[]
+
+//   @@unique([companyId, name])
+//   @@map("room_types")
+// }
+
+// model Room {
+//   id          Int       @id @default(autoincrement())
+//   name        String    @db.NVarChar(100)
+//   roomNumber  String    @map("room_number") @db.NVarChar(50)
+//   floor       Int
+//   roomTypeId  Int       @map("room_type_id")
+//   status      String    @default("AVAILABLE") @db.NVarChar(50)
+//   description String?   @db.NVarChar(500)
+//   companyId   Int       @map("company_id")
+//   createdAt   DateTime  @default(now()) @map("created_at")
+//   updatedAt   DateTime  @updatedAt @map("updated_at")
+//   deletedAt   DateTime? @map("deleted_at")
+//   createdBy   Int       @map("created_by")
+//   updatedBy   Int       @map("updated_by")
+//   deletedBy   Int?      @map("deleted_by")
+
+//   company  Company  @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   roomType RoomType @relation(fields: [roomTypeId], references: [id], onUpdate: NoAction)
+//   creator  User     @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater  User     @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter  User?    @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   stays    Stay[]
+
+//   @@unique([companyId, roomNumber])
+//   @@map("rooms")
+// }
+
+// model Client {
+//   id               Int       @id @default(autoincrement())
+//   firstName        String    @map("first_name") @db.NVarChar(100)
+//   lastName         String    @map("last_name") @db.NVarChar(100)
+//   email            String?   @db.NVarChar(255)
+//   phone            String?   @db.NVarChar(20)
+//   address          String?   @db.NVarChar(255)
+//   idNumber         String?   @map("id_number") @db.NVarChar(50)
+//   customerType     String    @default("WALK_IN") @map("customer_type") @db.NVarChar(50)
+//   hasAccount       Boolean   @default(false) @map("has_account")
+//   creditLimit      Decimal?  @map("credit_limit") @db.Decimal(10, 2)
+//   currentBalance   Decimal   @default(0) @map("current_balance") @db.Decimal(10, 2)
+//   sponsorCompanyId Int?      @map("sponsor_company_id")
+//   employeeId       String?   @map("employee_id") @db.NVarChar(50)
+//   department       String?   @db.NVarChar(100)
+//   companyId        Int       @map("company_id")
+//   createdAt        DateTime  @default(now()) @map("created_at")
+//   updatedAt        DateTime  @updatedAt @map("updated_at")
+//   deletedAt        DateTime? @map("deleted_at")
+//   createdBy        Int       @map("created_by")
+//   updatedBy        Int       @map("updated_by")
+//   deletedBy        Int?      @map("deleted_by")
+
+//   company             Company              @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   sponsorCompany      Company?             @relation("SponsoredClients", fields: [sponsorCompanyId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   creator             User                 @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater             User                 @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter             User?                @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   stays               Stay[]
+//   invoices            Invoice[]
+//   accountTransactions AccountTransaction[]
+//   restaurantOrders    RestaurantOrder[]
+//   supermarketOrders   SupermarketOrder[]
+//   laundryOrders       LaundryOrder[]
+//   sportReservations   SportReservation[]
+//   barberAppointments  BarberAppointment[]
+
+//   @@map("clients")
+// }
+
+// model Stay {
+//   id             Int       @id @default(autoincrement())
+//   roomId         Int       @map("room_id")
+//   clientId       Int       @map("client_id")
+//   checkInDate    DateTime  @map("check_in_date")
+//   checkOutDate   DateTime  @map("check_out_date")
+//   actualCheckIn  DateTime? @map("actual_check_in")
+//   actualCheckOut DateTime? @map("actual_check_out")
+//   status         String    @default("confirmed") @db.NVarChar(50)
+//   adults         Int       @default(1)
+//   children       Int       @default(0)
+//   totalAmount    Decimal   @map("total_amount") @db.Decimal(10, 2)
+//   paidAmount     Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+//   notes          String?   @db.NVarChar(500)
+//   companyId      Int       @map("company_id")
+//   createdAt      DateTime  @default(now()) @map("created_at")
+//   updatedAt      DateTime  @updatedAt @map("updated_at")
+//   deletedAt      DateTime? @map("deleted_at")
+//   createdBy      Int       @map("created_by")
+//   updatedBy      Int       @map("updated_by")
+//   deletedBy      Int?      @map("deleted_by")
+
+//   company            Company             @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   room               Room                @relation(fields: [roomId], references: [id], onUpdate: NoAction)
+//   client             Client              @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+//   creator            User                @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater            User                @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter            User?               @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   consumptions       Consumption[]
+//   restaurantOrders   RestaurantOrder[]
+//   supermarketOrders  SupermarketOrder[]
+//   laundryOrders      LaundryOrder[]
+//   sportReservations  SportReservation[]
+//   barberAppointments BarberAppointment[]
+
+//   @@map("stays")
+// }
+
+// model Category {
+//   id           Int       @id @default(autoincrement())
+//   name         String    @db.NVarChar(100)
+//   categoryType String    @map("category_type") @db.NVarChar(50)
+//   type         String    @db.NVarChar(50)
+//   description  String?   @db.NVarChar(500)
+//   companyId    Int       @map("company_id")
+//   createdAt    DateTime  @default(now()) @map("created_at")
+//   updatedAt    DateTime  @updatedAt @map("updated_at")
+//   deletedAt    DateTime? @map("deleted_at")
+//   createdBy    Int       @map("created_by")
+//   updatedBy    Int       @map("updated_by")
+//   deletedBy    Int?      @map("deleted_by")
+
+//   company  Company   @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator  User      @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater  User      @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter  User?     @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   products Product[]
+
+//   @@map("categories")
+// }
+
+// model Product {
+//   id          Int       @id @default(autoincrement())
+//   name        String    @db.NVarChar(200)
+//   categoryId  Int       @map("category_id")
+//   price       Decimal   @db.Decimal(10, 2)
+//   unit        String    @db.NVarChar(50)
+//   description String?   @db.NVarChar(500)
+//   barcode     String?   @db.NVarChar(50)
+//   stock       Int       @default(0)
+//   companyId   Int       @map("company_id")
+//   createdAt   DateTime  @default(now()) @map("created_at")
+//   updatedAt   DateTime  @updatedAt @map("updated_at")
+//   deletedAt   DateTime? @map("deleted_at")
+//   createdBy   Int       @map("created_by")
+//   updatedBy   Int       @map("updated_by")
+//   deletedBy   Int?      @map("deleted_by")
+
+//   category               Category                @relation(fields: [categoryId], references: [id], onUpdate: NoAction)
+//   company                Company                 @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator                User                    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater                User                    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter                User?                   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   consumptions           Consumption[]
+//   restaurantOrderItems   RestaurantOrderItem[]
+//   supermarketOrderItems  SupermarketOrderItem[]
+//   laundryOrderItems      LaundryOrderItem[]
+//   sportReservationItems  SportReservationItem[]
+//   barberAppointmentItems BarberAppointmentItem[]
+
+//   @@map("products")
+// }
+
+// model Consumption {
+//   id        Int       @id @default(autoincrement())
+//   stayId    Int       @map("stay_id")
+//   productId Int       @map("product_id")
+//   quantity  Decimal   @db.Decimal(10, 2)
+//   unitPrice Decimal   @map("unit_price") @db.Decimal(10, 2)
+//   total     Decimal   @db.Decimal(10, 2)
+//   date      DateTime
+//   companyId Int       @map("company_id")
+//   createdAt DateTime  @default(now()) @map("created_at")
+//   updatedAt DateTime  @updatedAt @map("updated_at")
+//   deletedAt DateTime? @map("deleted_at")
+//   createdBy Int       @map("created_by")
+//   updatedBy Int       @map("updated_by")
+//   deletedBy Int?      @map("deleted_by")
+
+//   stay    Stay    @relation(fields: [stayId], references: [id], onUpdate: NoAction)
+//   product Product @relation(fields: [productId], references: [id], onUpdate: NoAction)
+//   company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator User    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater User    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter User?   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+//   @@map("consumptions")
+// }
+
+// model RestaurantOrder {
+//   id            Int       @id @default(autoincrement())
+//   stayId        Int?      @map("stay_id")
+//   clientId      Int       @map("client_id")
+//   orderDate     DateTime  @map("order_date")
+//   total         Decimal   @db.Decimal(10, 2)
+//   status        String    @db.NVarChar(50)
+//   serviceMode   String    @default("WALK_IN") @map("service_mode") @db.NVarChar(50)
+//   tableNumber   String?   @map("table_number") @db.NVarChar(20)
+//   paymentStatus String    @default("PENDING") @map("payment_status") @db.NVarChar(50)
+//   paidAmount    Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+//   companyId     Int       @map("company_id")
+//   createdAt     DateTime  @default(now()) @map("created_at")
+//   updatedAt     DateTime  @updatedAt @map("updated_at")
+//   deletedAt     DateTime? @map("deleted_at")
+//   createdBy     Int       @map("created_by")
+//   updatedBy     Int       @map("updated_by")
+//   deletedBy     Int?      @map("deleted_by")
+
+//   stay     Stay?                 @relation(fields: [stayId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   client   Client                @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+//   company  Company               @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator  User                  @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater  User                  @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter  User?                 @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   items    RestaurantOrderItem[]
+//   payments Payment[]
+//   table    RestaurantTable?      @relation("CurrentTableOrder")  
+
+//   @@map("restaurant_orders")
+// }
+
+// model RestaurantOrderItem {
+//   id        Int     @id @default(autoincrement())
+//   orderId   Int     @map("order_id")
+//   productId Int     @map("product_id")
+//   quantity  Decimal @db.Decimal(10, 2)
+//   unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+//   total     Decimal @db.Decimal(10, 2)
+
+//   order   RestaurantOrder @relation(fields: [orderId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+//   product Product         @relation(fields: [productId], references: [id], onUpdate: NoAction)
+
+//   @@map("restaurant_order_items")
+// }
+
+// model SupermarketOrder {
+//   id            Int       @id @default(autoincrement())
+//   stayId        Int?      @map("stay_id")
+//   clientId      Int       @map("client_id")
+//   orderDate     DateTime  @map("order_date")
+//   total         Decimal   @db.Decimal(10, 2)
+//   status        String    @db.NVarChar(50)
+//   serviceMode   String    @default("WALK_IN") @map("service_mode") @db.NVarChar(50)
+//   paymentStatus String    @default("PENDING") @map("payment_status") @db.NVarChar(50)
+//   paidAmount    Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+//   companyId     Int       @map("company_id")
+//   createdAt     DateTime  @default(now()) @map("created_at")
+//   updatedAt     DateTime  @updatedAt @map("updated_at")
+//   deletedAt     DateTime? @map("deleted_at")
+//   createdBy     Int       @map("created_by")
+//   updatedBy     Int       @map("updated_by")
+//   deletedBy     Int?      @map("deleted_by")
+
+//   stay     Stay?                  @relation(fields: [stayId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   client   Client                 @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+//   company  Company                @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator  User                   @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater  User                   @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter  User?                  @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   items    SupermarketOrderItem[]
+//   payments Payment[]
+
+//   @@map("supermarket_orders")
+// }
+
+// model SupermarketOrderItem {
+//   id        Int     @id @default(autoincrement())
+//   orderId   Int     @map("order_id")
+//   productId Int     @map("product_id")
+//   quantity  Decimal @db.Decimal(10, 2)
+//   unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+//   total     Decimal @db.Decimal(10, 2)
+
+//   order   SupermarketOrder @relation(fields: [orderId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+//   product Product          @relation(fields: [productId], references: [id], onUpdate: NoAction)
+
+//   @@map("supermarket_order_items")
+// }
+
+// model LaundryOrder {
+//   id            Int       @id @default(autoincrement())
+//   stayId        Int?      @map("stay_id")
+//   clientId      Int       @map("client_id")
+//   orderDate     DateTime  @map("order_date")
+//   total         Decimal   @db.Decimal(10, 2)
+//   status        String    @db.NVarChar(50)
+//   serviceMode   String    @default("WALK_IN") @map("service_mode") @db.NVarChar(50)
+//   pickupDate    DateTime? @map("pickup_date")
+//   deliveryDate  DateTime? @map("delivery_date")
+//   paymentStatus String    @default("PENDING") @map("payment_status") @db.NVarChar(50)
+//   paidAmount    Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+//   companyId     Int       @map("company_id")
+//   createdAt     DateTime  @default(now()) @map("created_at")
+//   updatedAt     DateTime  @updatedAt @map("updated_at")
+//   deletedAt     DateTime? @map("deleted_at")
+//   createdBy     Int       @map("created_by")
+//   updatedBy     Int       @map("updated_by")
+//   deletedBy     Int?      @map("deleted_by")
+
+//   stay     Stay?              @relation(fields: [stayId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   client   Client             @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+//   company  Company            @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator  User               @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater  User               @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter  User?              @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   items    LaundryOrderItem[]
+//   payments Payment[]
+
+//   @@map("laundry_orders")
+// }
+
+// model LaundryOrderItem {
+//   id        Int     @id @default(autoincrement())
+//   orderId   Int     @map("order_id")
+//   productId Int     @map("product_id")
+//   quantity  Decimal @db.Decimal(10, 2)
+//   unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+//   total     Decimal @db.Decimal(10, 2)
+
+//   order   LaundryOrder @relation(fields: [orderId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+//   product Product      @relation(fields: [productId], references: [id], onUpdate: NoAction)
+
+//   @@map("laundry_order_items")
+// }
+
+// model SportReservation {
+//   id              Int       @id @default(autoincrement())
+//   stayId          Int?      @map("stay_id")
+//   clientId        Int       @map("client_id")
+//   reservationDate DateTime  @map("reservation_date")
+//   startTime       DateTime  @map("start_time")
+//   endTime         DateTime  @map("end_time")
+//   total           Decimal   @db.Decimal(10, 2)
+//   status          String    @db.NVarChar(50)
+//   serviceMode     String    @default("WALK_IN") @map("service_mode") @db.NVarChar(50)
+//   facilityType    String?   @map("facility_type") @db.NVarChar(100)
+//   paymentStatus   String    @default("PENDING") @map("payment_status") @db.NVarChar(50)
+//   paidAmount      Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+//   companyId       Int       @map("company_id")
+//   createdAt       DateTime  @default(now()) @map("created_at")
+//   updatedAt       DateTime  @updatedAt @map("updated_at")
+//   deletedAt       DateTime? @map("deleted_at")
+//   createdBy       Int       @map("created_by")
+//   updatedBy       Int       @map("updated_by")
+//   deletedBy       Int?      @map("deleted_by")
+
+//   stay     Stay?                  @relation(fields: [stayId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   client   Client                 @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+//   company  Company                @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator  User                   @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater  User                   @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter  User?                  @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   items    SportReservationItem[]
+//   payments Payment[]
+
+//   @@map("sport_reservations")
+// }
+
+// model SportReservationItem {
+//   id            Int     @id @default(autoincrement())
+//   reservationId Int     @map("reservation_id")
+//   productId     Int     @map("product_id")
+//   quantity      Decimal @db.Decimal(10, 2)
+//   unitPrice     Decimal @map("unit_price") @db.Decimal(10, 2)
+//   total         Decimal @db.Decimal(10, 2)
+
+//   reservation SportReservation @relation(fields: [reservationId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+//   product     Product          @relation(fields: [productId], references: [id], onUpdate: NoAction)
+
+//   @@map("sport_reservation_items")
+// }
+
+// model BarberAppointment {
+//   id              Int       @id @default(autoincrement())
+//   stayId          Int?      @map("stay_id")
+//   clientId        Int       @map("client_id")
+//   appointmentDate DateTime  @map("appointment_date")
+//   startTime       DateTime  @map("start_time")
+//   endTime         DateTime? @map("end_time")
+//   total           Decimal   @db.Decimal(10, 2)
+//   status          String    @db.NVarChar(50)
+//   serviceMode     String    @default("WALK_IN") @map("service_mode") @db.NVarChar(50)
+//   barberName      String?   @map("barber_name") @db.NVarChar(100)
+//   paymentStatus   String    @default("PENDING") @map("payment_status") @db.NVarChar(50)
+//   paidAmount      Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+//   companyId       Int       @map("company_id")
+//   createdAt       DateTime  @default(now()) @map("created_at")
+//   updatedAt       DateTime  @updatedAt @map("updated_at")
+//   deletedAt       DateTime? @map("deleted_at")
+//   createdBy       Int       @map("created_by")
+//   updatedBy       Int       @map("updated_by")
+//   deletedBy       Int?      @map("deleted_by")
+
+//   stay     Stay?                   @relation(fields: [stayId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   client   Client                  @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+//   company  Company                 @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator  User                    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater  User                    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter  User?                   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   items    BarberAppointmentItem[]
+//   payments Payment[]
+
+//   @@map("barber_appointments")
+// }
+
+// model BarberAppointmentItem {
+//   id            Int     @id @default(autoincrement())
+//   appointmentId Int     @map("appointment_id")
+//   productId     Int     @map("product_id")
+//   quantity      Decimal @db.Decimal(10, 2)
+//   unitPrice     Decimal @map("unit_price") @db.Decimal(10, 2)
+//   total         Decimal @db.Decimal(10, 2)
+
+//   appointment BarberAppointment @relation(fields: [appointmentId], references: [id], onUpdate: NoAction, onDelete: Cascade)
+//   product     Product           @relation(fields: [productId], references: [id], onUpdate: NoAction)
+
+//   @@map("barber_appointment_items")
+// }
+
+// model Payment {
+//   id                  Int       @id @default(autoincrement())
+//   amount              Decimal   @db.Decimal(10, 2)
+//   paymentMethod       String    @map("payment_method") @db.NVarChar(50)
+//   paymentDate         DateTime  @default(now()) @map("payment_date")
+//   status              String    @default("COMPLETED") @db.NVarChar(50)
+//   reference           String?   @db.NVarChar(100)
+//   notes               String?   @db.NVarChar(500)
+//   restaurantOrderId   Int?      @map("restaurant_order_id")
+//   supermarketOrderId  Int?      @map("supermarket_order_id")
+//   laundryOrderId      Int?      @map("laundry_order_id")
+//   sportReservationId  Int?      @map("sport_reservation_id")
+//   barberAppointmentId Int?      @map("barber_appointment_id")
+//   companyId           Int       @map("company_id")
+//   createdAt           DateTime  @default(now()) @map("created_at")
+//   updatedAt           DateTime  @updatedAt @map("updated_at")
+//   deletedAt           DateTime? @map("deleted_at")
+//   createdBy           Int       @map("created_by")
+//   updatedBy           Int       @map("updated_by")
+//   deletedBy           Int?      @map("deleted_by")
+
+//   restaurantOrder   RestaurantOrder?   @relation(fields: [restaurantOrderId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   supermarketOrder  SupermarketOrder?  @relation(fields: [supermarketOrderId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   laundryOrder      LaundryOrder?      @relation(fields: [laundryOrderId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   sportReservation  SportReservation?  @relation(fields: [sportReservationId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   barberAppointment BarberAppointment? @relation(fields: [barberAppointmentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   company           Company            @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator           User               @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater           User               @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter           User?              @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+//   @@map("payments")
+// }
+
+// model AccountTransaction {
+//   id              Int       @id @default(autoincrement())
+//   clientId        Int       @map("client_id")
+//   transactionType String    @map("transaction_type") @db.NVarChar(50)
+//   amount          Decimal   @db.Decimal(10, 2)
+//   balance         Decimal   @db.Decimal(10, 2)
+//   description     String    @db.NVarChar(500)
+//   referenceType   String?   @map("reference_type") @db.NVarChar(100)
+//   referenceId     Int?      @map("reference_id")
+//   transactionDate DateTime  @default(now()) @map("transaction_date")
+//   companyId       Int       @map("company_id")
+//   createdAt       DateTime  @default(now()) @map("created_at")
+//   updatedAt       DateTime  @updatedAt @map("updated_at")
+//   deletedAt       DateTime? @map("deleted_at")
+//   createdBy       Int       @map("created_by")
+//   updatedBy       Int       @map("updated_by")
+//   deletedBy       Int?      @map("deleted_by")
+
+//   client  Client  @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+//   company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator User    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater User    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter User?   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+//   @@index([clientId, transactionDate])
+//   @@map("account_transactions")
+// }
+
+// model SponsorAccount {
+//   id               Int       @id @default(autoincrement())
+//   sponsorCompanyId Int       @map("sponsor_company_id")
+//   serviceCompanyId Int       @map("service_company_id")
+//   accountName      String    @map("account_name") @db.NVarChar(200)
+//   accountNumber    String?   @unique @map("account_number") @db.NVarChar(50)
+//   contactPerson    String?   @map("contact_person") @db.NVarChar(100)
+//   contactEmail     String?   @map("contact_email") @db.NVarChar(255)
+//   contactPhone     String?   @map("contact_phone") @db.NVarChar(20)
+//   creditLimit      Decimal?  @map("credit_limit") @db.Decimal(10, 2)
+//   currentBalance   Decimal   @default(0) @map("current_balance") @db.Decimal(10, 2)
+//   paymentTerms     String?   @map("payment_terms") @db.NVarChar(100)
+//   isActive         Boolean   @default(true) @map("is_active")
+//   createdAt        DateTime  @default(now()) @map("created_at")
+//   updatedAt        DateTime  @updatedAt @map("updated_at")
+//   deletedAt        DateTime? @map("deleted_at")
+//   createdBy        Int       @map("created_by")
+//   updatedBy        Int       @map("updated_by")
+//   deletedBy        Int?      @map("deleted_by")
+
+//   serviceCompany Company @relation(fields: [serviceCompanyId], references: [id], onUpdate: NoAction)
+//   creator        User    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater        User    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter        User?   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+//   @@unique([sponsorCompanyId, serviceCompanyId])
+//   @@map("sponsor_accounts")
+// }
+
+// model Invoice {
+//   id            Int       @id @default(autoincrement())
+//   invoiceNumber String    @unique @map("invoice_number") @db.NVarChar(50)
+//   clientId      Int       @map("client_id")
+//   issueDate     DateTime  @map("issue_date")
+//   dueDate       DateTime? @map("due_date")
+//   subtotal      Decimal   @db.Decimal(10, 2)
+//   tax           Decimal   @db.Decimal(10, 2)
+//   total         Decimal   @db.Decimal(10, 2)
+//   status        String    @db.NVarChar(50)
+//   paymentMethod String?   @map("payment_method") @db.NVarChar(50)
+//   notes         String?   @db.NVarChar(500)
+//   companyId     Int       @map("company_id")
+//   createdAt     DateTime  @default(now()) @map("created_at")
+//   updatedAt     DateTime  @updatedAt @map("updated_at")
+//   deletedAt     DateTime? @map("deleted_at")
+//   createdBy     Int       @map("created_by")
+//   updatedBy     Int       @map("updated_by")
+//   deletedBy     Int?      @map("deleted_by")
+
+//   client  Client  @relation(fields: [clientId], references: [id], onUpdate: NoAction)
+//   company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   creator User    @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater User    @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter User?   @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+//   @@map("invoices")
+// }
+
+// model License {
+//   id         Int      @id @default(autoincrement())
+//   companyId  Int      @unique @map("company_id")
+//   plan       String   @default("TRIAL") @db.NVarChar(50)
+//   status     String   @default("ACTIVE") @db.NVarChar(50)
+//   startDate  DateTime @map("start_date")
+//   endDate    DateTime @map("end_date")
+//   maxUsers   Int      @map("max_users")
+//   maxClients Int      @map("max_clients")
+//   maxRooms   Int      @map("max_rooms")
+//   createdAt  DateTime @default(now()) @map("created_at")
+//   updatedAt  DateTime @updatedAt @map("updated_at")
+
+//   company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+
+//   @@map("licenses")
+// }
+
+// model AuditLog {
+//   id        Int      @id @default(autoincrement())
+//   userId    Int      @map("user_id")
+//   companyId Int      @map("company_id")
+//   action    String   @db.NVarChar(50)
+//   entity    String   @db.NVarChar(100)
+//   entityId  Int      @map("entity_id")
+//   changes   String?  @db.NVarChar(Max)
+//   ipAddress String?  @map("ip_address") @db.NVarChar(50)
+//   userAgent String?  @map("user_agent") @db.NVarChar(500)
+//   createdAt DateTime @default(now()) @map("created_at")
+
+//   user    User    @relation(fields: [userId], references: [id], onUpdate: NoAction)
+//   company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+
+//   @@map("audit_logs")
+// }
+
+
+// model RestaurantTable {
+//   id              Int       @id @default(autoincrement())
+//   tableNumber     String    @map("table_number") @db.NVarChar(50)
+//   capacity        Int
+//   location        String?   @db.NVarChar(100)
+//   description     String?   @db.NVarChar(500)
+//   status          String    @default("AVAILABLE") @db.NVarChar(50)
+//   currentOrderId  Int?      @unique @map("current_order_id")
+//   companyId       Int       @map("company_id")
+//   createdAt       DateTime  @default(now()) @map("created_at")
+//   updatedAt       DateTime  @updatedAt @map("updated_at")
+//   deletedAt       DateTime? @map("deleted_at")
+//   createdBy       Int       @map("created_by")
+//   updatedBy       Int       @map("updated_by")
+//   deletedBy       Int?      @map("deleted_by")
+
+//   company      Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+//   currentOrder RestaurantOrder? @relation("CurrentTableOrder", fields: [currentOrderId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+//   creator      User             @relation("CreatedBy", fields: [createdBy], references: [id], onUpdate: NoAction)
+//   updater      User             @relation("UpdatedBy", fields: [updatedBy], references: [id], onUpdate: NoAction)
+//   deleter      User?            @relation("DeletedBy", fields: [deletedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+//   @@unique([companyId, tableNumber])
+//   @@map("restaurant_tables")
+// }
+
