@@ -6,6 +6,7 @@ export enum UserRole {
   STAFF = 'STAFF',
   RECEPTIONIST = 'RECEPTIONIST',
   WAITER = 'WAITER',
+  CASHIER = 'CASHIER',
 }
 
 // User status enum

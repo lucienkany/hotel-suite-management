@@ -1,33 +1,27 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Request,
-  Query,
-  ParseIntPipe,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
-import { RestaurantTablesService } from './restaurant-tables.service';
-import { CreateRestaurantTableDto } from './dto/create-restaurant-table.dto';
-import { UpdateRestaurantTableDto } from './dto/update-restaurant-table.dto';
-import { AssignTableDto } from './dto/assign-table.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { TableStatus } from '../common/constants';
+import { TableStatus, UserRole } from '../common/constants';
+import { AssignTableDto } from './dto/assign-table.dto';
+import { CreateRestaurantTableDto } from './dto/create-restaurant-table.dto';
+import { UpdateRestaurantTableDto } from './dto/update-restaurant-table.dto';
+import { RestaurantTablesService } from './restaurant-tables.service';
 
 @ApiTags('restaurant-tables')
 @ApiBearerAuth()
@@ -39,7 +33,7 @@ export class RestaurantTablesController {
   ) {}
 
   @Post()
-  @Roles('admin', 'manager')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MANAGER)
   create(
     @Body() createRestaurantTableDto: CreateRestaurantTableDto,
     @Request() req
@@ -52,40 +46,64 @@ export class RestaurantTablesController {
   }
 
   @Get()
-  @Roles('admin', 'manager', 'receptionist', 'waiter')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.MANAGER,
+    UserRole.RECEPTIONIST,
+    UserRole.STAFF
+  )
   findAll(
     @Request() req,
-    @Query('status') status?: TableStatus,
-    @Query('minCapacity', new ParseIntPipe({ optional: true }))
-    minCapacity?: number,
+    @Query('status') status?: string,
+    @Query('minCapacity') minCapacity?: string,
     @Query('location') location?: string,
-    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
   ) {
+    // Parse optional parameters manually to avoid ParseIntPipe issues
+    const parsedMinCapacity = minCapacity
+      ? parseInt(minCapacity, 10)
+      : undefined;
+    const parsedPage = page ? parseInt(page, 10) : undefined;
+    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
+
     return this.restaurantTablesService.findAll(
       req.user.companyId,
-      status,
-      minCapacity,
+      status as TableStatus,
+      parsedMinCapacity,
       location,
-      page,
-      limit
+      parsedPage,
+      parsedLimit
     );
   }
 
   @Get('statistics')
-  @Roles('admin', 'manager')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.MANAGER,
+    UserRole.RECEPTIONIST,
+    UserRole.STAFF
+  )
   getStatistics(@Request() req) {
     return this.restaurantTablesService.getTableStatistics(req.user.companyId);
   }
 
   @Get(':id')
-  @Roles('admin', 'manager', 'receptionist', 'waiter')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.MANAGER,
+    UserRole.RECEPTIONIST,
+    UserRole.STAFF
+  )
   findOne(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.restaurantTablesService.findOne(id, req.user.companyId);
   }
 
   @Patch(':id')
-  @Roles('admin', 'manager')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MANAGER)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRestaurantTableDto: UpdateRestaurantTableDto,
@@ -100,7 +118,7 @@ export class RestaurantTablesController {
   }
 
   @Post(':id/assign')
-  @Roles('admin', 'manager', 'waiter')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @HttpCode(HttpStatus.OK)
   assignTable(
     @Param('id', ParseIntPipe) id: number,
@@ -116,7 +134,7 @@ export class RestaurantTablesController {
   }
 
   @Post(':id/clear')
-  @Roles('admin', 'manager', 'waiter')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @HttpCode(HttpStatus.OK)
   clearTable(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.restaurantTablesService.clearTable(
@@ -127,7 +145,7 @@ export class RestaurantTablesController {
   }
 
   @Post(':id/reserve')
-  @Roles('admin', 'manager', 'waiter')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @HttpCode(HttpStatus.OK)
   reserveTable(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.restaurantTablesService.reserveTable(
@@ -138,7 +156,7 @@ export class RestaurantTablesController {
   }
 
   @Post(':id/unreserve')
-  @Roles('admin', 'manager', 'waiter')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @HttpCode(HttpStatus.OK)
   unreserveTable(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.restaurantTablesService.unreserveTable(
@@ -149,7 +167,7 @@ export class RestaurantTablesController {
   }
 
   @Delete(':id')
-  @Roles('admin', 'manager')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.restaurantTablesService.remove(

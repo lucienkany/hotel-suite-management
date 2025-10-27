@@ -1,14 +1,14 @@
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
   ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
+import { OrderStatus, TableStatus } from '../common/constants';
 import { PrismaService } from '../prisma/prisma.service';
+import { AssignTableDto } from './dto/assign-table.dto';
 import { CreateRestaurantTableDto } from './dto/create-restaurant-table.dto';
 import { UpdateRestaurantTableDto } from './dto/update-restaurant-table.dto';
-import { AssignTableDto } from './dto/assign-table.dto';
-import { TableStatus, OrderStatus } from '../common/constants';
 
 @Injectable()
 export class RestaurantTablesService {
@@ -36,6 +36,7 @@ export class RestaurantTablesService {
       data: {
         ...createRestaurantTableDto,
         status: TableStatus.AVAILABLE,
+        currentOrderId: null, // Explicitly set to null to avoid unique constraint issues
         companyId,
         createdBy: userId,
         updatedBy: userId,
@@ -480,6 +481,7 @@ export class RestaurantTablesService {
       available,
       occupied,
       reserved,
+
       occupancyRate: total > 0 ? ((occupied / total) * 100).toFixed(2) : '0.00',
     };
   }

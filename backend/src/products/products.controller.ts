@@ -1,34 +1,33 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Request,
-  Query,
-  ParseIntPipe,
+  Get,
   HttpCode,
   HttpStatus,
-  ParseBoolPipe,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiBearerAuth,
+  ApiOperation,
   ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { ProductsService } from './products.service';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { CategoryType, UserRole } from '../common/constants';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole, CategoryType } from '../common/constants';
+import { ProductsService } from './products.service';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -56,7 +55,8 @@ export class ProductsController {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.RECEPTIONIST
+    UserRole.RECEPTIONIST,
+    UserRole.CASHIER // Added CASHIER for POS access
   )
   @ApiOperation({ summary: 'Get all products' })
   @ApiQuery({ name: 'categoryId', required: false, type: Number })
@@ -67,22 +67,28 @@ export class ProductsController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   findAll(
     @Request() req,
-    @Query('categoryId', new ParseIntPipe({ optional: true }))
-    categoryId?: number,
+    @Query('categoryId') categoryId?: string,
     @Query('categoryType') categoryType?: CategoryType,
     @Query('search') search?: string,
-    @Query('inStock', new ParseBoolPipe({ optional: true })) inStock?: boolean,
-    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number
+    @Query('inStock') inStock?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
   ) {
+    // Parse optional parameters manually to avoid ParseIntPipe issues
+    const parsedCategoryId = categoryId ? parseInt(categoryId, 10) : undefined;
+    const parsedInStock =
+      inStock === 'true' ? true : inStock === 'false' ? false : undefined;
+    const parsedPage = page ? parseInt(page, 10) : undefined;
+    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
+
     return this.productsService.findAll(
       req.user.companyId,
-      categoryId,
+      parsedCategoryId,
       categoryType,
       search,
-      inStock,
-      page,
-      limit
+      parsedInStock,
+      parsedPage,
+      parsedLimit
     );
   }
 
@@ -95,13 +101,11 @@ export class ProductsController {
     type: Number,
     description: 'Stock threshold (default: 10)',
   })
-  getLowStockProducts(
-    @Request() req,
-    @Query('threshold', new ParseIntPipe({ optional: true })) threshold?: number
-  ) {
+  getLowStockProducts(@Request() req, @Query('threshold') threshold?: string) {
+    const parsedThreshold = threshold ? parseInt(threshold, 10) : undefined;
     return this.productsService.getLowStockProducts(
       req.user.companyId,
-      threshold
+      parsedThreshold
     );
   }
 
@@ -118,7 +122,8 @@ export class ProductsController {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.RECEPTIONIST
+    UserRole.RECEPTIONIST,
+    UserRole.CASHIER // Added CASHIER for POS access
   )
   @ApiOperation({ summary: 'Get product by ID' })
   @ApiResponse({ status: 200, description: 'Product found' })

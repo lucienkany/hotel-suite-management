@@ -1,32 +1,32 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Request,
-  Query,
-  ParseIntPipe,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiBearerAuth,
+  ApiOperation,
   ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { CategoryType, UserRole } from '../common/constants';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole, CategoryType } from '../common/constants';
 
 @ApiTags('Categories')
 @ApiBearerAuth()
@@ -54,7 +54,8 @@ export class CategoriesController {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.RECEPTIONIST
+    UserRole.RECEPTIONIST,
+    UserRole.CASHIER // Added CASHIER for POS access
   )
   @ApiOperation({ summary: 'Get all categories' })
   @ApiQuery({ name: 'categoryType', enum: CategoryType, required: false })
@@ -67,16 +68,20 @@ export class CategoriesController {
     @Query('categoryType') categoryType?: CategoryType,
     @Query('type') type?: string,
     @Query('search') search?: string,
-    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
   ) {
+    // Parse page and limit manually to handle optional parameters properly
+    const parsedPage = page ? parseInt(page, 10) : undefined;
+    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
+
     return this.categoriesService.findAll(
       req.user.companyId,
       categoryType,
       type,
       search,
-      page,
-      limit
+      parsedPage,
+      parsedLimit
     );
   }
 
@@ -86,7 +91,8 @@ export class CategoriesController {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.RECEPTIONIST
+    UserRole.RECEPTIONIST,
+    UserRole.CASHIER // Added CASHIER for POS access
   )
   @ApiOperation({ summary: 'Get category by ID' })
   @ApiResponse({ status: 200, description: 'Category found' })

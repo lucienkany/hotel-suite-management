@@ -1,31 +1,26 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Request,
-  Query,
-  ParseIntPipe,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { CustomerType, UserRole } from '../common/constants';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole, CustomerType } from '../common/constants';
 
 @ApiTags('clients')
 @Controller('clients')
@@ -54,21 +49,26 @@ export class ClientsController {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.RECEPTIONIST
+    UserRole.RECEPTIONIST,
+    UserRole.CASHIER
   )
   findAll(
     @Request() req,
     @Query('customerType') customerType?: CustomerType,
     @Query('search') search?: string,
-    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
   ) {
+    // Manual parsing for optional parameters
+    const parsedPage = page ? parseInt(page, 10) : undefined;
+    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
+
     return this.clientsService.findAll(
       req.user.companyId,
       customerType,
       search,
-      page,
-      limit
+      parsedPage,
+      parsedLimit
     );
   }
 
@@ -78,16 +78,21 @@ export class ClientsController {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.RECEPTIONIST
+    UserRole.RECEPTIONIST,
+    UserRole.CASHIER
   )
   getCorporateClients(
     @Request() req,
-    @Query('sponsorCompanyId', new ParseIntPipe({ optional: true }))
-    sponsorCompanyId?: number
+    @Query('sponsorCompanyId') sponsorCompanyId?: string
   ) {
+    // Manual parsing for optional parameter
+    const parsedSponsorCompanyId = sponsorCompanyId
+      ? parseInt(sponsorCompanyId, 10)
+      : undefined;
+
     return this.clientsService.getCorporateClients(
       req.user.companyId,
-      sponsorCompanyId
+      parsedSponsorCompanyId
     );
   }
 
@@ -97,7 +102,8 @@ export class ClientsController {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.RECEPTIONIST
+    UserRole.RECEPTIONIST,
+    UserRole.CASHIER
   )
   searchByPhoneOrEmail(@Request() req, @Query('q') query: string) {
     return this.clientsService.searchByPhoneOrEmail(req.user.companyId, query);
@@ -109,7 +115,8 @@ export class ClientsController {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.RECEPTIONIST
+    UserRole.RECEPTIONIST,
+    UserRole.CASHIER
   )
   findOne(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.clientsService.findOne(id, req.user.companyId);
@@ -121,7 +128,8 @@ export class ClientsController {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.RECEPTIONIST
+    UserRole.RECEPTIONIST,
+    UserRole.CASHIER
   )
   getClientStatistics(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.clientsService.getClientStatistics(id, req.user.companyId);
@@ -133,7 +141,8 @@ export class ClientsController {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.RECEPTIONIST
+    UserRole.RECEPTIONIST,
+    UserRole.CASHIER
   )
   getClientBalance(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.clientsService.getClientBalance(id, req.user.companyId);
